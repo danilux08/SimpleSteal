@@ -1,0 +1,5 @@
+main: me.danilux.simplesteal.SimpleSteal
+name: SimpleSteal
+version: 1.0.0
+author: Danilux
+api-version: 1.21

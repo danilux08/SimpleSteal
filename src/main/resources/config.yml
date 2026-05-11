@@ -1,0 +1,21 @@
+# Amount of hearts after unban.
+unban-hearts: 4
+# Maximum amount of hearts. 0 = No Limit
+max-hearts: 30
+# If enabled, players with max hearts will be highlighted after they get hit.
+highlight-maxed: true
+unban-anchor:
+  material: 'beacon'
+  display-name: '<gold><bold>Unban Anchor</bold></gold>'
+  lore:
+    - '<gray>Use it to resurrect</gray>'
+    - '<gray>banned players.</gray>'
+  recipe:
+    pattern:
+      - ' G '
+      - 'DBD'
+      - ' G '
+    materials:
+      G: 'gold_ingot'
+      D: 'diamond'
+      B: 'beacon'
