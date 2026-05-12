@@ -28,18 +28,33 @@ public class DataDB extends SQLiteDB {
         return this.query("SELECT hearts FROM players WHERE uuid = ?;", result -> {
             try {
                 return result.getInt("hearts");
-            } catch (SQLException e) {
+            } catch(SQLException e) {
                 this.plugin.getLogger().severe(String.format("Cannot get %s's hearts: %s", player.getName(), e.getMessage()));
                 return 10;
             }
         }, new QueryParameter<>(1, player.getUniqueId()));
     }
 
-    public void addHearts(Player player, int amount) {
-        this.mutate("UPDATE players SET hearts = hearts + ? WHERE uuid = ?;", new QueryParameter<>(1, amount), new QueryParameter<>(2, player.getUniqueId()));
+    public void setHearts(Player player, int amount) {
+        this.mutate("UPDATE players SET hearts = ? WHERE uuid = ?;", new QueryParameter<>(1, amount), new QueryParameter<>(2, player.getUniqueId()));
     }
 
-    public void subHearts(Player player, int amount) {
-        this.mutate("UPDATE players SET hearts = hearts - ? WHERE uuid = ?;", new QueryParameter<>(1, amount), new QueryParameter<>(2, player.getUniqueId()));
+    public boolean isBanned(Player player) {
+        return this.query("SELECT banned FROM players WHERE uuid = ?;", result -> {
+            try {
+                return result.getBoolean("banned");
+            } catch(SQLException e) {
+                this.plugin.getLogger().severe(String.format("Cannot check whether %s is banned or not: %s", player.getName(), e.getMessage()));
+                return false;
+            }
+        }, new QueryParameter<>(1, player.getUniqueId()));
+    }
+
+    public void ban(Player player) {
+        this.mutate("UPDATE players SET banned = 1 WHERE uuid = ?;", new QueryParameter<>(1, player.getUniqueId()));
+    }
+
+    public void unban(Player player) {
+        this.mutate("UPDATE players SET banned = 0 WHERE uuid = ?;", new QueryParameter<>(1, player.getUniqueId()));
     }
 }
