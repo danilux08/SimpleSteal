@@ -1,13 +1,13 @@
-package me.danilux.simplesteal.utils;
+package me.danilux.simplesteal.utils.lifesteal;
 
 import me.danilux.simplesteal.SimpleSteal;
-import me.danilux.simplesteal.config.Config;
 import me.danilux.simplesteal.database.impl.DataDB;
+import me.danilux.simplesteal.utils.FormatUtils;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
@@ -15,58 +15,18 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class Utils {
+public class LifeStealUtils {
 
     private final SimpleSteal plugin;
-    private final MiniMessage mm;
-    private final Config lang;
     private final DataDB db;
+    private final FormatUtils format;
     private final NamespacedKey persistentDataKey;
 
-    public Utils(SimpleSteal plugin) {
+    public LifeStealUtils(SimpleSteal plugin) {
         this.plugin = plugin;
-        this.mm = MiniMessage.miniMessage();
-        this.lang = this.plugin.getConfigManager().getLang();
-        this.db = this.plugin.getDBManager().getDataDB();
+        this.db = plugin.getDBManager().getDataDB();
+        this.format = plugin.getFormatUtils();
         this.persistentDataKey = new NamespacedKey(plugin, "persistentData");
-    }
-
-    public Component formatColor(String str) {
-        return this.mm.deserialize(str);
-    }
-
-    public Placeholder<String> getPlayerPlaceholder(Player player) {
-        return new Placeholder<>("player", player.getName());
-    }
-
-    public <T> String formatPlaceholder(String str, Placeholder<T> placeholder) {
-        return str.replaceAll(String.format("{%s}", placeholder.name()), placeholder.value().toString());
-    }
-
-    public Component formatText(String text, Placeholder<?>... placeholders) {
-        String message = text;
-        if(message.isEmpty()) return null;
-        for(Placeholder<?> p : placeholders) message = formatPlaceholder(message, p);
-        return this.formatColor(message);
-    }
-
-    public Component formatText(Config config, String key, Placeholder<?>... placeholders) {
-        return this.formatText(config.get().getString(key, config.getDefault(key).toString()), placeholders);
-    }
-
-    public List<Component> formatTextList(Config config, String key, Placeholder<?>... placeholders) {
-        List<String> lore = this.lang.get().getStringList(key);
-        List<Component> formattedLore = new ArrayList<>();
-        if(!lore.isEmpty()) for(String row : lore) formattedLore.add(this.formatText(row, placeholders));
-        return formattedLore;
-    }
-
-    public void sendMessage(Player player, Component message) {
-        if(message.equals(Component.empty())) return;
-        player.sendMessage(message);
     }
 
     public int getUnbanHearts() {
@@ -87,16 +47,17 @@ public class Utils {
     private ItemStack getHeartStack(int amount) {
         ItemStack stack = new ItemStack(Material.APPLE, amount);
         ItemMeta meta = stack.getItemMeta();
-        Component displayName = this.formatText(this.lang, "heart.display-name");
+        Component displayName = this.format.formatConfigText("heart.display-name");
         if(displayName != null) meta.displayName(displayName);
-        meta.lore(this.formatTextList(this.lang, "heart.lore"));
+        meta.lore(this.format.formatConfigTextList("heart.lore"));
         meta.getPersistentDataContainer().set(persistentDataKey, PersistentDataType.STRING, "heart-item");
         stack.setItemMeta(meta);
         return stack;
     }
 
     public void dropHearts(Location loc, int amount) {
-        loc.getWorld().dropItem(loc, this.getHeartStack(amount));
+        if(amount < 1) return;
+        for(int i = 0; i < amount; i++) loc.getWorld().dropItem(loc, this.getHeartStack(1));
     }
 
     public int getHearts(Player player) {
@@ -130,24 +91,25 @@ public class Utils {
         this.updateHearts(player, newHearts);
     }
 
-    public boolean isBanned(Player player) {
-        return this.db.isBanned(player);
-    }
-
-    public void ban(Player player) {
-        this.db.ban(player);
+    /**
+     * Bans players for LifeSteal reasons.
+     */
+    public void ban(OfflinePlayer player) {
         this.db.setHearts(player, 0);
-        Component message = this.formatText(this.lang, "banned");
-        if(message == null) return;
-        player.kick(message);
+        this.plugin.getBanUtils().ban(player, this.format.formatConfigText("banned"), this.plugin.getName());
     }
 
-//    public Component unban(Player player, boolean ignoreDoomed) {
-//        if(!ignoreDoomed && player.hasPermission("ss.doomed")) return this.formatText(this.lang, "doomed", this.getPlayerPlaceholder(player));
-//        this.db.unban(player);
-//        this.db.setHearts(player, this.getUnbanHearts());
-//        return null;
-//    }
+    /**
+     * Unbans players for LifeSteal reasons.
+     */
+    public LSUnbanResult unban(OfflinePlayer player) {
+        String banSource = this.plugin.getBanUtils().getBanSource(player);
+        if(banSource == null) return LSUnbanResult.ALREADY;
+        if(!banSource.equals(this.plugin.getName())) return LSUnbanResult.NOT_LS_RELATED;
+        this.db.setHearts(player, this.getUnbanHearts());
+        this.plugin.getBanUtils().unban(player);
+        return LSUnbanResult.SUCCESS;
+    }
 
     public NamespacedKey getPersistentDataKey() {
         return this.persistentDataKey;

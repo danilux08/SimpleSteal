@@ -15,7 +15,6 @@ repositories {
 
 dependencies {
     compileOnly 'io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT'
-    implementation 'net.kyori:adventure-text-minimessage:5.0.0'
     implementation 'org.xerial:sqlite-jdbc:3.53.1.0'
 }
 

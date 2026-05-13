@@ -1,6 +1,7 @@
 package me.danilux.simplesteal.listeners;
 
 import me.danilux.simplesteal.SimpleSteal;
+import me.danilux.simplesteal.utils.lifesteal.LifeStealUtils;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -13,10 +14,10 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class EntityListener implements Listener {
 
-    private final SimpleSteal plugin;
+    private final LifeStealUtils lifesteal;
 
     public EntityListener(SimpleSteal plugin) {
-        this.plugin = plugin;
+        this.lifesteal = plugin.getLifeStealUtils();
     }
 
     @EventHandler
@@ -26,10 +27,11 @@ public class EntityListener implements Listener {
         Item item = event.getItem();
         ItemStack stack = item.getItemStack();
         ItemMeta meta = stack.getItemMeta();
-        String data = meta.getPersistentDataContainer().get(this.plugin.getUtils().getPersistentDataKey(), PersistentDataType.STRING);
+        String data = meta.getPersistentDataContainer().get(this.lifesteal.getPersistentDataKey(), PersistentDataType.STRING);
         if(data == null) return;
         if(!data.equals("heart-item")) return;
-        stack.setAmount(0);
-        this.plugin.getUtils().addHearts(player, 1);
+        event.setCancelled(true);
+        item.remove();
+        this.lifesteal.addHearts(player, 1);
     }
 }

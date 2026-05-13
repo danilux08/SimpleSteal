@@ -1,8 +1,8 @@
-package me.danilux.simplesteal.database;
+package me.danilux.simplesteal.database.types;
 
 import me.danilux.simplesteal.SimpleSteal;
+import me.danilux.simplesteal.database.Database;
 
-import java.io.File;
 import java.sql.*;
 
 public class SQLiteDB extends Database {
