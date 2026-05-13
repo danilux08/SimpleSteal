@@ -4,11 +4,11 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import io.papermc.paper.ban.BanListType;
 import me.danilux.simplesteal.SimpleSteal;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.BanEntry;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
 import java.util.Date;
 
@@ -28,6 +28,9 @@ public class BanUtils {
 
     public void tempBan(OfflinePlayer target, Component reason, Date expires, String source) {
         this.bans.addBan(target.getPlayerProfile(), this.plugin.getFormatUtils().stringifyColor(reason), expires, source);
+        if(!target.isOnline()) return;
+        Player onlineTarget = (Player) target;
+        onlineTarget.kick(reason);
     }
 
     public void ban(OfflinePlayer target, Component reason, String source) {

@@ -7,7 +7,6 @@ import io.papermc.paper.command.brigadier.Commands;
 import me.danilux.simplesteal.SimpleSteal;
 import me.danilux.simplesteal.utils.FormatUtils;
 import me.danilux.simplesteal.utils.lifesteal.LSUnbanResult;
-import me.danilux.simplesteal.utils.lifesteal.LifeStealUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
