@@ -61,9 +61,16 @@ public class FormatUtils {
         player.sendMessage(message);
     }
 
-    public void sendNoPermissionMessage(CommandSender sender) {
-        Component message = this.formatConfigText("no-permission");
+    public void sendSenderMessage(CommandSender sender, Component message) {
         if(message.equals(Component.empty())) return;
         sender.sendMessage(message);
+    }
+
+    public void sendNoPermissionMessage(CommandSender sender) {
+        this.sendSenderMessage(sender, this.formatConfigText("no-permission"));
+    }
+
+    public void sendOnlyPlayersMessage(CommandSender sender) {
+        this.sendSenderMessage(sender, this.formatConfigText("only-players"));
     }
 }

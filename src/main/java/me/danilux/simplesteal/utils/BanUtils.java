@@ -11,6 +11,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.util.Date;
+import java.util.Set;
 
 public class BanUtils {
 
@@ -20,6 +21,10 @@ public class BanUtils {
     public BanUtils(SimpleSteal plugin) {
         this.plugin = plugin;
         this.bans = Bukkit.getBanList(BanListType.PROFILE);
+    }
+
+    public Set<BanEntry<PlayerProfile>> getBans() {
+        return this.bans.getEntries();
     }
 
     public boolean isBanned(OfflinePlayer target) {

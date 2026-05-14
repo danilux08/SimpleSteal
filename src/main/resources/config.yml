@@ -7,11 +7,13 @@ highlight-maxed: true
 unban-anchor:
   material: 'beacon'
   recipe:
-    pattern:
+    shape:
       - ' G '
       - 'DBD'
       - ' G '
-    materials:
+    ingredients:
       G: 'gold_ingot'
       D: 'diamond'
       B: 'beacon'
+heart:
+  material: 'apple'

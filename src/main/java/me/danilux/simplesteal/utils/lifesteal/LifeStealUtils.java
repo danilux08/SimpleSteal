@@ -4,10 +4,7 @@ import me.danilux.simplesteal.SimpleSteal;
 import me.danilux.simplesteal.database.impl.DataDB;
 import me.danilux.simplesteal.utils.FormatUtils;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
@@ -29,6 +26,10 @@ public class LifeStealUtils {
         this.persistentDataKey = new NamespacedKey(plugin, "persistentData");
     }
 
+    private Material getConfigMaterial(String key) {
+        return Registry.MATERIAL.get(NamespacedKey.minecraft(this.plugin.getConfig().getString(key, "stone")));
+    }
+
     public int getUnbanHearts() {
         return this.plugin.getConfig().getInt("unban-hearts", 4);
     }
@@ -44,8 +45,8 @@ public class LifeStealUtils {
         att.setBaseValue(amount * 2);
     }
 
-    private ItemStack getHeartStack(int amount) {
-        ItemStack stack = new ItemStack(Material.APPLE, amount);
+    public ItemStack getHeartStack(int amount) {
+        ItemStack stack = new ItemStack(this.getConfigMaterial("heart.material"), amount);
         ItemMeta meta = stack.getItemMeta();
         Component displayName = this.format.formatConfigText("heart.display-name");
         if(displayName != null) meta.displayName(displayName);
@@ -58,6 +59,17 @@ public class LifeStealUtils {
     public void dropHearts(Location loc, int amount) {
         if(amount < 1) return;
         for(int i = 0; i < amount; i++) loc.getWorld().dropItem(loc, this.getHeartStack(1));
+    }
+
+    public ItemStack getUnbanAnchorStack(int amount) {
+        ItemStack stack = new ItemStack(this.getConfigMaterial("unban-anchor"), amount);
+        ItemMeta meta = stack.getItemMeta();
+        Component displayName = this.format.formatConfigText("unban-anchor.display-name");
+        if(displayName != null) meta.displayName(displayName);
+        meta.lore(this.format.formatConfigTextList("unban-anchor.lore"));
+        meta.getPersistentDataContainer().set(persistentDataKey, PersistentDataType.STRING, "unban-anchor-item");
+        stack.setItemMeta(meta);
+        return stack;
     }
 
     public int getHearts(Player player) {

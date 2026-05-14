@@ -4,6 +4,7 @@ import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import me.danilux.simplesteal.commands.Command;
 import me.danilux.simplesteal.commands.SSCommand;
+import me.danilux.simplesteal.commands.WithdrawCommand;
 import me.danilux.simplesteal.config.ConfigManager;
 import me.danilux.simplesteal.database.DBManager;
 import me.danilux.simplesteal.listeners.EntityListener;
@@ -44,6 +45,12 @@ public class SimpleSteal extends JavaPlugin {
         this.getLogger().info("Bye, bye!");
     }
 
+    public void reload() {
+        this.configManager.reloadAll();
+        this.getServer().getPluginManager().disablePlugin(this);
+        this.getServer().getPluginManager().enablePlugin(this);
+    }
+
     private void registerListeners(Listener... listeners) {
         for(Listener listener : listeners) this.getServer().getPluginManager().registerEvents(listener, this);
     }
@@ -53,6 +60,7 @@ public class SimpleSteal extends JavaPlugin {
                 LifecycleEvents.COMMANDS,
                 event -> {
                     this.registerCommand(new SSCommand(this), event.registrar());
+                    this.registerCommand(new WithdrawCommand(this), event.registrar());
                 }
         );
     }

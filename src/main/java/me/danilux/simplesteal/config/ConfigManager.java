@@ -25,8 +25,10 @@ public class ConfigManager {
                 new ConfigEntry<>("heart.display-name", "<red><bold>Heart</bold></red>"),
                 new ConfigEntry<>("heart.lore", List.of("<gray>Pick it up to</gray>", "<gray>gain a heart.</gray>")),
                 new ConfigEntry<>("no-permission", "<red>You have no permission to do this.</red>"),
+                new ConfigEntry<>("only-players", "<red>Only players can do this.</red>"),
                 new ConfigEntry<>("doomed", "<dark_red>{player}</dark_red> <red>cannot be unbanned.</red>"),
                 new ConfigEntry<>("banned", "<red>You have no hearts left.</red>"),
+                new ConfigEntry<>("reloaded", "<green>SimpleSteal plugin reloaded.</green>"),
                 new ConfigEntry<>("unban.already", "<dark_red>{player}</dark_red> <red>is already unbanned.</red>"),
                 new ConfigEntry<>("unban.not-ls-related", "<dark_red>{player}</dark_red> <red>is banned for not-LifeSteal-related reasons.</red>"),
                 new ConfigEntry<>("unban.success", "<dark_green>{player}</dark_green> <green>unbanned successfully.</green>")
@@ -38,6 +40,10 @@ public class ConfigManager {
      */
     public void saveAll() {
         this.langConfig.save();
+    }
+
+    public void reloadAll() {
+        this.langConfig.reload();
     }
 
     public Config getLang() {
