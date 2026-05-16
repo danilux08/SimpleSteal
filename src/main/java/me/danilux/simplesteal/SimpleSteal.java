@@ -3,6 +3,7 @@ package me.danilux.simplesteal;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import me.danilux.simplesteal.commands.Command;
+import me.danilux.simplesteal.commands.HeartCommand;
 import me.danilux.simplesteal.commands.SSCommand;
 import me.danilux.simplesteal.commands.WithdrawCommand;
 import me.danilux.simplesteal.config.ConfigManager;
@@ -59,8 +60,9 @@ public class SimpleSteal extends JavaPlugin {
         this.getLifecycleManager().registerEventHandler(
                 LifecycleEvents.COMMANDS,
                 event -> {
-                    this.registerCommand(new SSCommand(this), event.registrar());
+                    this.registerCommand(new HeartCommand(this), event.registrar());
                     this.registerCommand(new WithdrawCommand(this), event.registrar());
+                    this.registerCommand(new SSCommand(this), event.registrar());
                 }
         );
     }

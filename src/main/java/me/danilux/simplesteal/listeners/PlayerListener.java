@@ -31,13 +31,13 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
         Player victim = event.getPlayer();
-        this.lifesteal.subHearts(victim, 1);
+        this.lifesteal.subHearts(victim, 1, false);
         EntityDamageEvent damageEvent = victim.getLastDamageCause();
         if(damageEvent == null) return;
         if(damageEvent.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
             Player killer = victim.getKiller();
             if(killer == null) return;
-            this.lifesteal.addHearts(killer, 1);
+            this.lifesteal.addHearts(killer, 1, false);
         }else {
             /*
                 A non-player killed the victim, so he

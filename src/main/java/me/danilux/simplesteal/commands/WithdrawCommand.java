@@ -29,7 +29,7 @@ public class WithdrawCommand implements Command {
 
     @Override
     public LiteralCommandNode<CommandSourceStack> build() {
-        return Commands.literal("widthdraw")
+        return Commands.literal("withdraw")
                 .then(Commands.argument("amount", IntegerArgumentType.integer(1))
                         .executes(ctx -> {
                             CommandSender sender = ctx.getSource().getSender();
@@ -41,7 +41,7 @@ public class WithdrawCommand implements Command {
                             AttributeInstance attribute = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
                             int availableHearts = (attribute != null ? (int) attribute.getValue() / 2 : hearts) - 1;
                             int finalHearts = Math.min(hearts, availableHearts);
-                            this.lifesteal.subHearts(player, finalHearts);
+                            this.lifesteal.subHearts(player, finalHearts, false);
                             player.getInventory().addItem(this.lifesteal.getHeartStack(finalHearts));
                             return 1;
                         })

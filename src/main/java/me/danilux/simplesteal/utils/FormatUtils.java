@@ -70,6 +70,10 @@ public class FormatUtils {
         this.sendSenderMessage(sender, this.formatConfigText("no-permission"));
     }
 
+    public void sendNotOnlineMessage(CommandSender sender, String playerName) {
+        this.sendSenderMessage(sender, this.formatConfigText("not-online", new Placeholder<>("player", playerName)));
+    }
+
     public void sendOnlyPlayersMessage(CommandSender sender) {
         this.sendSenderMessage(sender, this.formatConfigText("only-players"));
     }

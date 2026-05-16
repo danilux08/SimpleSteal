@@ -43,11 +43,12 @@ public class SSCommand implements Command {
     @Override
     public LiteralCommandNode<CommandSourceStack> build() {
         return Commands.literal("simplesteal")
+                .requires(stack -> stack.getSender().hasPermission("ss.admin"))
                 .then(Commands.literal("unban")
                         .then(Commands.argument("player", StringArgumentType.word())
                                 .executes(ctx -> {
                                     CommandSender sender = ctx.getSource().getSender();
-                                    if (!sender.hasPermission("ss.admin")) {
+                                    if(!sender.hasPermission("ss.admin")) {
                                         this.format.sendNoPermissionMessage(sender);
                                         return 0;
                                     }
@@ -66,7 +67,7 @@ public class SSCommand implements Command {
                 ).then(Commands.literal("reload")
                         .executes(ctx -> {
                             CommandSender sender = ctx.getSource().getSender();
-                            if (!sender.hasPermission("ss.admin")) {
+                            if(!sender.hasPermission("ss.admin")) {
                                 this.format.sendNoPermissionMessage(sender);
                                 return 0;
                             }

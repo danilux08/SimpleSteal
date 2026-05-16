@@ -72,35 +72,33 @@ public class LifeStealUtils {
         return stack;
     }
 
-    public int getHearts(Player player) {
+    public int getHearts(OfflinePlayer player) {
         return this.db.getHearts(player);
     }
 
-    public void addHearts(Player player, int amount) {
-        if(player.hasPermission("ss.immune")) return;
+    public boolean setHearts(Player player, int amount, boolean bypassBan) {
+        if(player.hasPermission("ss.immune")) return false;
+        int finalHearts = Math.max(0, amount);
+        this.db.setHearts(player, finalHearts);
+        if(!bypassBan && amount <= 0) this.ban(player);
+        this.updateHearts(player, finalHearts);
+        return true;
+    }
+
+    public boolean addHearts(Player player, int amount, boolean bypassBan) {
         int maxHearts = getMaxHearts();
         int currentHearts = this.getHearts(player);
         int newHearts = currentHearts + amount;
-        if(newHearts > maxHearts) {
-            int heartsToDrop = newHearts - maxHearts;
-            this.dropHearts(player.getLocation(), amount);
-            newHearts -= heartsToDrop;
-        }
-        this.db.setHearts(player, newHearts);
-        this.updateHearts(player, newHearts);
+        int delta = newHearts - maxHearts;
+        boolean success = this.setHearts(player, Math.min(newHearts, maxHearts), bypassBan);
+        if(success && delta > 0) this.dropHearts(player.getLocation(), delta);
+        return success;
     }
 
-    public void subHearts(Player player, int amount) {
-        if(player.hasPermission("ss.god")) return;
-        if(player.hasPermission("ss.immune")) return;
+    public boolean subHearts(Player player, int amount, boolean bypassBan) {
+        if(player.hasPermission("ss.god")) return false;
         int currentHearts = this.getHearts(player);
-        int newHearts = currentHearts - amount;
-        if(newHearts <= 0) {
-            this.ban(player);
-            return;
-        }
-        this.db.setHearts(player, newHearts);
-        this.updateHearts(player, newHearts);
+        return this.setHearts(player, currentHearts - amount, bypassBan);
     }
 
     /**
@@ -121,6 +119,17 @@ public class LifeStealUtils {
         this.db.setHearts(player, this.getUnbanHearts());
         this.plugin.getBanUtils().unban(player);
         return LSUnbanResult.SUCCESS;
+    }
+
+    /**
+     * Highlight a player for a specific time.
+     */
+    public void tempHighlightPlayer(Player player, int minutes) {
+        player.setGlowing(true);
+        int seconds = minutes * 60;
+        Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
+            player.setGlowing(false);
+        }, 20L * seconds);
     }
 
     public NamespacedKey getPersistentDataKey() {
