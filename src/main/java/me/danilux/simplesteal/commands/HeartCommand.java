@@ -144,6 +144,6 @@ public class HeartCommand implements Command {
     }
 
     private void sendFailMessage(CommandSender sender, Player player) {
-        this.format.sendSenderMessage(sender, this.format.formatConfigText("cannot-change", this.format.getPlayerPlaceholder(player)));
+        this.format.sendSenderMessage(sender, this.format.formatConfigText("hearts.cannot-change", this.format.getPlayerPlaceholder(player)));
     }
 }

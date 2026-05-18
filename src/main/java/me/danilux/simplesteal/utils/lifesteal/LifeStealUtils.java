@@ -1,29 +1,43 @@
 package me.danilux.simplesteal.utils.lifesteal;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
 import me.danilux.simplesteal.SimpleSteal;
 import me.danilux.simplesteal.database.impl.DataDB;
+import me.danilux.simplesteal.utils.BanUtils;
 import me.danilux.simplesteal.utils.FormatUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class LifeStealUtils {
 
     private final SimpleSteal plugin;
     private final DataDB db;
     private final FormatUtils format;
+    private final BanUtils bans;
     private final NamespacedKey persistentDataKey;
+    private final NamespacedKey recipesKey;
 
     public LifeStealUtils(SimpleSteal plugin) {
         this.plugin = plugin;
         this.db = plugin.getDBManager().getDataDB();
         this.format = plugin.getFormatUtils();
+        this.bans = plugin.getBanUtils();
         this.persistentDataKey = new NamespacedKey(plugin, "persistentData");
+        this.recipesKey = new NamespacedKey(plugin, "recipes");
     }
 
     private Material getConfigMaterial(String key) {
@@ -40,7 +54,7 @@ public class LifeStealUtils {
     }
 
     public void updateHearts(Player player, int amount) {
-        AttributeInstance att = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        AttributeInstance att = player.getAttribute(Attribute.MAX_HEALTH);
         if(att == null) return;
         att.setBaseValue(amount * 2);
     }
@@ -58,11 +72,11 @@ public class LifeStealUtils {
 
     public void dropHearts(Location loc, int amount) {
         if(amount < 1) return;
-        for(int i = 0; i < amount; i++) loc.getWorld().dropItem(loc, this.getHeartStack(1));
+        for(int i = 0; i < amount; i++) loc.getWorld().dropItemNaturally(loc, this.getHeartStack(1));
     }
 
     public ItemStack getUnbanAnchorStack(int amount) {
-        ItemStack stack = new ItemStack(this.getConfigMaterial("unban-anchor"), amount);
+        ItemStack stack = new ItemStack(this.getConfigMaterial("unban-anchor.material"), amount);
         ItemMeta meta = stack.getItemMeta();
         Component displayName = this.format.formatConfigText("unban-anchor.display-name");
         if(displayName != null) meta.displayName(displayName);
@@ -109,6 +123,17 @@ public class LifeStealUtils {
         this.plugin.getBanUtils().ban(player, this.format.formatConfigText("banned"), this.plugin.getName());
     }
 
+    public List<PlayerProfile> getLSBannedPlayers() {
+        Set<BanEntry<PlayerProfile>> bans = this.bans.getBans();
+        /*
+            Get the list of banned players for LifeSteal purposes.
+        */
+        return bans.stream()
+                .filter(ban -> ban.getSource().equals(this.plugin.getName()))
+                .map(BanEntry::getBanTarget)
+                .toList();
+    }
+
     /**
      * Unbans players for LifeSteal reasons.
      */
@@ -117,6 +142,7 @@ public class LifeStealUtils {
         if(banSource == null) return LSUnbanResult.ALREADY;
         if(!banSource.equals(this.plugin.getName())) return LSUnbanResult.NOT_LS_RELATED;
         this.db.setHearts(player, this.getUnbanHearts());
+        this.db.setLastUnban(player, LocalDateTime.now());
         this.plugin.getBanUtils().unban(player);
         return LSUnbanResult.SUCCESS;
     }
@@ -130,6 +156,28 @@ public class LifeStealUtils {
         Bukkit.getScheduler().runTaskLater(this.plugin, () -> {
             player.setGlowing(false);
         }, 20L * seconds);
+    }
+
+    private ShapedRecipe createRecipe(List<String> shapeRows, HashMap<Character, Material> ingredients, ItemStack result) {
+        if(shapeRows.size() < 3) return null;
+        ShapedRecipe recipe = new ShapedRecipe(this.recipesKey, result);
+        recipe.shape(shapeRows.getFirst(), shapeRows.get(1), shapeRows.get(2));
+        for(char symbol : ingredients.keySet()) {
+            recipe.setIngredient(symbol, ingredients.get(symbol));
+        }
+        return recipe;
+    }
+
+    public ShapedRecipe getUnbanAnchorRecipe() {
+        List<String> shapeRows = this.plugin.getConfig().getStringList("unban-anchor.recipe.shape");
+        ConfigurationSection ingredientsSection = this.plugin.getConfig().getConfigurationSection("unban-anchor.recipe.ingredients");
+        if(ingredientsSection == null) return null;
+        HashMap<Character, Material> ingredients = new HashMap<>();
+        for(String key : ingredientsSection.getKeys(false)) {
+            Material material = this.getConfigMaterial(String.format("unban-anchor.recipe.ingredients.%s", key));
+            ingredients.put(key.charAt(0), material);
+        }
+        return this.createRecipe(shapeRows, ingredients, this.getUnbanAnchorStack(1));
     }
 
     public NamespacedKey getPersistentDataKey() {

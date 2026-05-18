@@ -6,6 +6,9 @@ import me.danilux.simplesteal.database.types.SQLiteDB;
 import org.bukkit.OfflinePlayer;
 
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 public class DataDB extends SQLiteDB {
 
@@ -17,7 +20,7 @@ public class DataDB extends SQLiteDB {
     }
 
     public void generatePlayersTable() {
-        this.mutate("CREATE TABLE IF NOT EXISTS players (uuid TEXT PRIMARY KEY NOT NULL, hearts INTEGER NOT NULL DEFAULT 10);");
+        this.mutate("CREATE TABLE IF NOT EXISTS players (uuid TEXT PRIMARY KEY NOT NULL, hearts INTEGER NOT NULL DEFAULT 10, lastUnban INTEGER NOT NULL DEFAULT -1);");
     }
 
     /**
@@ -40,5 +43,22 @@ public class DataDB extends SQLiteDB {
 
     public void setHearts(OfflinePlayer player, int amount) {
         this.mutate("UPDATE players SET hearts = ? WHERE uuid = ?;", new QueryParameter<>(1, amount), new QueryParameter<>(2, player.getUniqueId()));
+    }
+
+    public LocalDateTime getLastUnban(OfflinePlayer player) {
+        return this.query("SELECT lastUnban FROM players WHERE uuid = ?;", result -> {
+            try {
+                long lastUnban = result.getLong("lastUnban");
+                if(lastUnban < 0) return null;
+                return LocalDateTime.ofInstant(Instant.ofEpochMilli(lastUnban), ZoneId.systemDefault());
+            } catch(SQLException e) {
+                this.plugin.getLogger().severe(String.format("Cannot get %s's last unban: %s", player.getName(), e.getMessage()));
+                return null;
+            }
+        }, new QueryParameter<>(1, player.getUniqueId()));
+    }
+
+    public void setLastUnban(OfflinePlayer player, LocalDateTime dateTime) {
+        this.mutate("UPDATE players SET lastUnban = ? WHERE uuid = ?;", new QueryParameter<>(1, dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()), new QueryParameter<>(2, player.getUniqueId()));
     }
 }

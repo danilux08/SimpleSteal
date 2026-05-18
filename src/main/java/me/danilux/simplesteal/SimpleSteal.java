@@ -8,12 +8,14 @@ import me.danilux.simplesteal.commands.SSCommand;
 import me.danilux.simplesteal.commands.WithdrawCommand;
 import me.danilux.simplesteal.config.ConfigManager;
 import me.danilux.simplesteal.database.DBManager;
+import me.danilux.simplesteal.listeners.BlockListener;
 import me.danilux.simplesteal.listeners.EntityListener;
 import me.danilux.simplesteal.listeners.PlayerListener;
 import me.danilux.simplesteal.utils.BanUtils;
 import me.danilux.simplesteal.utils.FormatUtils;
 import me.danilux.simplesteal.utils.lifesteal.LifeStealUtils;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class SimpleSteal extends JavaPlugin {
@@ -27,11 +29,13 @@ public class SimpleSteal extends JavaPlugin {
     @Override
     public void onEnable() {
         this.getLogger().info("Registering events...");
-        this.registerListeners(new EntityListener(this), new PlayerListener(this));
+        this.registerListeners(new BlockListener(this), new EntityListener(this), new PlayerListener(this));
         this.getLogger().info("Registering commands...");
         this.registerCommands();
         this.getLogger().info("Loading configurations...");
         this.configManager.loadAll();
+        this.getLogger().info("Registering recipes...");
+        this.registerRecipes();
         this.getLogger().info("Connecting databases...");
         this.dbManager.connectAll();
         this.getLogger().info("Done!");
@@ -69,6 +73,18 @@ public class SimpleSteal extends JavaPlugin {
 
     private void registerCommand(Command command, Commands commands) {
         commands.register(command.build(), command.getDescription(), command.getAliases());
+    }
+
+    private void registerRecipes() {
+        this.registerRecipe(this.lifeStealUtils.getUnbanAnchorRecipe());
+    }
+
+    private void registerRecipe(Recipe recipe) {
+        if(recipe == null) {
+            this.getLogger().warning("Cannot register a recipe.");
+            return;
+        }
+        this.getServer().addRecipe(recipe);
     }
 
     public ConfigManager getConfigManager() {

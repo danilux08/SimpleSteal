@@ -20,6 +20,10 @@ public class ConfigManager {
     public void loadAll() {
         this.plugin.saveDefaultConfig();
         this.langConfig.load(
+                new ConfigEntry<>("gui.previous-page-item", "<yellow>Previous Page</yellow>"),
+                new ConfigEntry<>("gui.next-page-item", "<yellow>Next Page</yellow>"),
+                new ConfigEntry<>("gui.unban.title", "<red><bold>Banned Players</bold></red>"),
+                new ConfigEntry<>("gui.unban.player-item", "<dark_red>{player}</dark_red>"),
                 new ConfigEntry<>("unban-anchor.display-name", "<gold><bold>Unban Anchor</bold></gold>"),
                 new ConfigEntry<>("unban-anchor.lore", List.of("<gray>Use it to resurrect</gray>", "<gray>banned players.</gray>")),
                 new ConfigEntry<>("heart.display-name", "<red><bold>Heart</bold></red>"),

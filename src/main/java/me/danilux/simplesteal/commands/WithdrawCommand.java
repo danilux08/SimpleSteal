@@ -38,7 +38,7 @@ public class WithdrawCommand implements Command {
                                 return 0;
                             }
                             int hearts = IntegerArgumentType.getInteger(ctx, "amount");
-                            AttributeInstance attribute = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+                            AttributeInstance attribute = player.getAttribute(Attribute.MAX_HEALTH);
                             int availableHearts = (attribute != null ? (int) attribute.getValue() / 2 : hearts) - 1;
                             int finalHearts = Math.min(hearts, availableHearts);
                             this.lifesteal.subHearts(player, finalHearts, false);

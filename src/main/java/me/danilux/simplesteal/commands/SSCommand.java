@@ -6,28 +6,25 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import me.danilux.simplesteal.SimpleSteal;
-import me.danilux.simplesteal.utils.BanUtils;
 import me.danilux.simplesteal.utils.FormatUtils;
 import me.danilux.simplesteal.utils.lifesteal.LSUnbanResult;
-import org.bukkit.BanEntry;
+import me.danilux.simplesteal.utils.lifesteal.LifeStealUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class SSCommand implements Command {
 
     private final SimpleSteal plugin;
     private final FormatUtils format;
-    private final BanUtils bans;
+    private final LifeStealUtils lifesteal;
 
     public SSCommand(SimpleSteal plugin) {
         this.plugin = plugin;
         this.format = plugin.getFormatUtils();
-        this.bans = plugin.getBanUtils();
+        this.lifesteal = plugin.getLifeStealUtils();
     }
 
     @Override
@@ -59,7 +56,8 @@ public class SSCommand implements Command {
                                     return 1;
                                 })
                                 .suggests((ctx, builder) -> {
-                                    List<String> bannedPlayers = this.getLSBannedPlayers();
+                                    List<String> bannedPlayers = this.lifesteal.getLSBannedPlayers()
+                                            .stream().map(PlayerProfile::getName).toList();
                                     bannedPlayers.forEach(builder::suggest);
                                     return builder.buildFuture();
                                 })
@@ -76,18 +74,5 @@ public class SSCommand implements Command {
                             return 1;
                         })
                 ).build();
-    }
-
-    private List<String> getLSBannedPlayers() {
-        Set<BanEntry<PlayerProfile>> bans = this.bans.getBans();
-        /*
-            Get the list of banned players for LifeSteal purposes.
-        */
-        Set<BanEntry<PlayerProfile>> lsBans = bans.stream()
-                .filter(ban -> ban.getSource().equals(this.plugin.getName()))
-                .collect(Collectors.toSet());
-        return lsBans.stream()
-                .map(entry -> entry.getBanTarget().getName())
-                .toList();
     }
 }
