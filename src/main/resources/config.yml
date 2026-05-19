@@ -4,6 +4,8 @@ unban-hearts: 4
 max-hearts: 100
 # If enabled, players with max hearts will be highlighted after they get hit.
 highlight-maxed: true
+# How long should the grace period last? (in hours)
+grace-period: 24
 unban-anchor:
   material: 'beacon'
   recipe:

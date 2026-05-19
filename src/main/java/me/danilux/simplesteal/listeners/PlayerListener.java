@@ -48,7 +48,8 @@ public class PlayerListener implements Listener {
             /*
                 Check if the victim is in the 24-hour grace period.
             */
-            if(now.isAfter(lastUnban) && now.isBefore(lastUnban.plusDays(1))) return;
+            int gracePeriod = this.plugin.getConfig().getInt("grace-period", 24);
+            if(now.isAfter(lastUnban) && now.isBefore(lastUnban.plusHours(gracePeriod))) return;
         }
         this.lifesteal.subHearts(victim, 1, false);
         EntityDamageEvent damageEvent = victim.getLastDamageCause();
